@@ -87,7 +87,7 @@
                         <div class="p-3 bg-light rounded-3">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <div class="d-flex align-items-center">
-                                    <div class="rounded-circle me-2" style="width: 12px; height: 12px; background: {{ $area->color }};"></div>
+                                    <div class="rounded-circle me-2 area-color-dot" data-bg="{{ $area->color }}" style="width: 12px; height: 12px;"></div>
                                     <span class="fw-semibold">{{ $area->name }}</span>
                                 </div>
                                 <span class="small text-muted">{{ $area->code }}</span>
@@ -101,7 +101,7 @@
                                 @php
                                     $pct = $area->seats_count > 0 ? round(($area->occupied_count / $area->seats_count) * 100) : 0;
                                 @endphp
-                                <div class="progress-bar" role="progressbar" style="width: {{ $pct }}%; background: {{ $area->color }};" 
+                                <div class="progress-bar" role="progressbar" style="width: 0%;" data-width="{{ $pct }}" data-bg="{{ $area->color }}" 
                                      aria-valuenow="{{ $pct }}" aria-valuemin="0" aria-valuemax="100"></div>
                             </div>
                         </div>

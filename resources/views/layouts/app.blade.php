@@ -414,6 +414,20 @@
     @stack('scripts')
 
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.area-color-dot[data-bg]').forEach(function(el) {
+                el.style.background = el.dataset.bg;
+            });
+            document.querySelectorAll('.progress-bar[data-width]').forEach(function(el) {
+                el.style.width = el.dataset.width + '%';
+                if (el.dataset.bg) {
+                    el.style.background = el.dataset.bg;
+                }
+            });
+        });
+    </script>
+
+    <script>
         // Auto-dismiss alerts after 5 seconds
         document.addEventListener('DOMContentLoaded', function() {
             setTimeout(function() {

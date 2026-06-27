@@ -7,12 +7,13 @@ use App\Models\Reservation;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class AdminController extends Controller
 {
     public function dashboard()
     {
-        $user = auth()->user();
+        $user = Auth::user();
         if (!$user || $user->role !== 'admin') {
             abort(403, 'Unauthorized access. Admin only.');
         }

@@ -15,10 +15,10 @@
 <div class="row g-3">
     @foreach($areas as $area)
         <div class="col-md-6 col-lg-4">
-            <div class="area-card card-custom p-4" onclick="window.location='{{ route('areas.show', $area->id) }}'">
+            <a href="{{ route('areas.show', $area->id) }}" class="area-card card-custom p-4 text-decoration-none text-reset d-block">
                 <div class="d-flex align-items-start justify-content-between mb-3">
                     <div class="d-flex align-items-center">
-                        <div class="rounded-circle me-2" style="width: 16px; height: 16px; background: {{ $area->color }};"></div>
+                        <div class="rounded-circle me-2 area-color-dot" data-bg="{{ $area->color }}" style="width: 16px; height: 16px;"></div>
                         <div>
                             <h6 class="fw-bold mb-0">{{ $area->name }}</h6>
                             <span class="small text-muted">{{ $area->code }}</span>
@@ -56,7 +56,7 @@
                     @php
                         $pct = $area->seats_count > 0 ? round(($area->occupied_count / $area->seats_count) * 100) : 0;
                     @endphp
-                    <div class="progress-bar" role="progressbar" style="width: {{ $pct }}%; background: {{ $area->color }};" 
+                    <div class="progress-bar" role="progressbar" style="width: 0%;" data-width="{{ $pct }}" data-bg="{{ $area->color }}" 
                          aria-valuenow="{{ $pct }}" aria-valuemin="0" aria-valuemax="100"></div>
                 </div>
 
@@ -65,7 +65,7 @@
                         {{ $area->available_count > 0 ? $area->available_count . ' seats available' : 'Fully occupied' }}
                     </span>
                 </div>
-            </div>
+            </a>
         </div>
     @endforeach
 </div>

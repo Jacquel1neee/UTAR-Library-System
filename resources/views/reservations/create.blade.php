@@ -39,11 +39,11 @@
 
     @foreach($areas as $area)
         <div class="col-md-6 col-lg-4">
-            <div class="area-card card-custom p-4" onclick="window.location='{{ route('areas.show', $area->id) }}'">
+            <a href="{{ route('areas.show', $area->id) }}" class="area-card card-custom p-4 text-decoration-none text-reset d-block">
                 <div class="d-flex align-items-start justify-content-between">
                     <div>
                         <div class="d-flex align-items-center">
-                            <div class="rounded-circle me-2" style="width: 14px; height: 14px; background: {{ $area->color }};"></div>
+                            <div class="rounded-circle me-2 area-color-dot" data-bg="{{ $area->color }}" style="width: 14px; height: 14px;"></div>
                             <h6 class="fw-bold mb-0">{{ $area->name }}</h6>
                         </div>
                         <p class="small text-muted mb-2">{{ $area->code }}</p>
@@ -56,7 +56,7 @@
                     @php
                         $pct = $area->seats_count > 0 ? round((($area->seats_count - $area->available_count) / $area->seats_count) * 100) : 0;
                     @endphp
-                    <div class="progress-bar" role="progressbar" style="width: {{ $pct }}%; background: {{ $area->color }};"></div>
+                    <div class="progress-bar" role="progressbar" style="width: 0%;" data-width="{{ $pct }}" data-bg="{{ $area->color }}"></div>
                 </div>
                 <div class="mt-2 small text-muted">
                     {{ $area->available_count }} of {{ $area->seats_count }} available
