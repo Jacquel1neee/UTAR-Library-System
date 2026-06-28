@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Area;
-use App\Models\Seat;
+use App\Models\Reservation;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -15,17 +15,13 @@ class AreaController extends Controller
             $query->where('is_active', true);
         }])->get();
 
-        $now = Carbon::now();
-        $today = $now->toDateString();
-        $currentTime = $now->toTimeString();
+        $today = Carbon::now()->toDateString();
 
         foreach ($areas as $area) {
-            $occupied = \App\Models\Reservation::whereHas('seat', function ($query) use ($area) {
+            $occupied = Reservation::whereHas('seat', function ($query) use ($area) {
                 $query->where('area_id', $area->id);
             })
                 ->where('reservation_date', $today)
-                ->where('start_time', '<=', $currentTime)
-                ->where('end_time', '>=', $currentTime)
                 ->whereIn('status', ['checked_in', 'temporary_leave'])
                 ->count();
 
@@ -42,15 +38,11 @@ class AreaController extends Controller
             $query->where('is_active', true)->orderBy('row_label')->orderBy('col_position');
         }])->findOrFail($id);
 
-        $now = Carbon::now();
-        $today = $now->toDateString();
-        $currentTime = $now->toTimeString();
+        $today = Carbon::now()->toDateString();
 
         foreach ($area->seats as $seat) {
-            $isOccupied = \App\Models\Reservation::where('seat_id', $seat->id)
+            $isOccupied = Reservation::where('seat_id', $seat->id)
                 ->where('reservation_date', $today)
-                ->where('start_time', '<=', $currentTime)
-                ->where('end_time', '>=', $currentTime)
                 ->whereIn('status', ['checked_in', 'temporary_leave'])
                 ->exists();
 

@@ -38,8 +38,11 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/reservations/{id}/check-in', [ReservationController::class, 'checkIn'])->name('reservations.check-in');
     Route::post('/reservations/{id}/temporary-leave', [ReservationController::class, 'temporaryLeave'])->name('reservations.temporary-leave');
     Route::post('/reservations/{id}/return', [ReservationController::class, 'returnFromLeave'])->name('reservations.return');
+    Route::post('/reservations/{id}/check-out', [ReservationController::class, 'checkOut'])->name('reservations.check-out');
 
     // Turnstile simulator
+    Route::get('/turnstile/simulator', [TurnstileController::class, 'showSimulator'])->name('turnstile.simulator');
+    Route::post('/turnstile/simulate', [TurnstileController::class, 'simulateScan'])->name('turnstile.simulate');
     Route::get('/turnstile/simulator', [TurnstileController::class, 'showSimulator'])->name('turnstile.simulator');
     Route::post('/turnstile/simulate', [TurnstileController::class, 'simulateScan'])->name('turnstile.simulate');
 

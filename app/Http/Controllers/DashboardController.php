@@ -16,18 +16,14 @@ class DashboardController extends Controller
             $query->where('is_active', true);
         }])->get();
 
-        // Get current occupancy for each area
-        $now = Carbon::now();
-        $today = $now->toDateString();
-        $currentTime = $now->toTimeString();
+        $today = Carbon::now()->toDateString();
 
         foreach ($areas as $area) {
+            // Count all checked_in and temporary_leave reservations for today
             $occupied = Reservation::whereHas('seat', function ($query) use ($area) {
                 $query->where('area_id', $area->id);
             })
                 ->where('reservation_date', $today)
-                ->where('start_time', '<=', $currentTime)
-                ->where('end_time', '>=', $currentTime)
                 ->whereIn('status', ['checked_in', 'temporary_leave'])
                 ->count();
 
@@ -35,7 +31,6 @@ class DashboardController extends Controller
             $area->available_count = $area->seats_count - $occupied;
         }
 
-        // Get user's active reservations
         $user = Auth::user();
         $activeReservations = [];
         $upcomingReservations = [];

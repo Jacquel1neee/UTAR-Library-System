@@ -200,4 +200,27 @@ class ReservationController extends Controller
         return redirect()->route('reservations.show', $reservation)
             ->with('success', 'Welcome back! Your seat is still reserved.');
     }
+
+    public function checkOut(int $id)
+    {
+        $reservation = Reservation::findOrFail($id);
+
+        $user = Auth::user();
+        if ($reservation->user_id !== $user->id && $user->role !== 'admin') {
+            abort(403);
+        }
+
+        if (!in_array($reservation->status, ['checked_in', 'temporary_leave'])) {
+            return back()->withErrors([
+                'status' => 'You are not checked in.'
+            ]);
+        }
+
+        $reservation->update([
+            'status' => 'completed',
+        ]);
+
+        return redirect()->route('reservations.show', $reservation)
+            ->with('success', 'Checked out successfully. Seat released.');
+    }
 }

@@ -13,7 +13,7 @@
 </div>
 
 <div class="row g-3">
-    <div class="col-md-8">
+    <div class="col-md-7">
         <div class="card-custom p-4">
             <h6 class="fw-bold mb-3"><i class="bi bi-qr-code-scan me-2 text-primary"></i>Simulate Scan</h6>
 
@@ -55,17 +55,29 @@
         </div>
     </div>
 
-    <div class="col-md-4">
+    <div class="col-md-5">
         <div class="card-custom p-4">
-            <h6 class="fw-bold mb-3"><i class="bi bi-info-circle me-2 text-secondary"></i>How it works</h6>
-            <ul class="small text-muted ps-3">
-                <li class="mb-2">Select a student and scan type</li>
-                <li class="mb-2"><strong>Entry:</strong> Checks in pending reservations within 15min of start time</li>
-                <li class="mb-2"><strong>Entry:</strong> Returns from temporary leave (if within 15min)</li>
-                <li class="mb-2"><strong>Exit:</strong> Releases any active reservations (checked_in or temporary_leave)</li>
-                <li class="mb-2">All events are logged in the turnstile_events table</li>
-            </ul>
-            <div class="alert alert-info small mb-0">
+            <h6 class="fw-bold mb-3"><i class="bi bi-info-circle me-2 text-secondary"></i>How Auto-Detect Works</h6>
+            
+            <div class="mb-3 p-3 bg-light rounded-3">
+                <h6 class="fw-bold small text-primary"><i class="bi bi-box-arrow-in-right me-1"></i> Entry (Scan In)</h6>
+                <ul class="small text-muted ps-3 mb-0">
+                    <li>Checks if you already have an active reservation</li>
+                    <li>If on temporary leave, returns you automatically</li>
+                    <li>Auto-detects your nearest pending reservation</li>
+                    <li>Checks in within 15 min before to 60 min after start time</li>
+                </ul>
+            </div>
+
+            <div class="p-3 bg-light rounded-3">
+                <h6 class="fw-bold small text-danger"><i class="bi bi-box-arrow-right me-1"></i> Exit (Scan Out)</h6>
+                <ul class="small text-muted ps-3 mb-0">
+                    <li>Releases all your active reservations</li>
+                    <li>Frees up seats for other students</li>
+                </ul>
+            </div>
+
+            <div class="mt-3 alert alert-info small mb-0">
                 <i class="bi bi-lightbulb me-2"></i>
                 In production, this will be replaced with real turnstile API integration.
             </div>
@@ -91,6 +103,11 @@ $(document).ready(function() {
                 alert.removeClass('alert-success alert-danger')
                      .addClass('alert-success')
                      .html('<i class="bi bi-check-circle me-2"></i> ' + response.message);
+                
+                // Refresh page after 2 seconds
+                setTimeout(function() {
+                    location.reload();
+                }, 2000);
             },
             error: function(xhr) {
                 $('#scanResult').show();

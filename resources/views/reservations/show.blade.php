@@ -74,7 +74,15 @@
                             <i class="bi bi-box-arrow-right me-2"></i>Temporary Leave (15 min)
                         </button>
                     </form>
-                    <small class="text-muted">You have 15 minutes to return or your seat will be released.</small>
+                    
+                    <form action="{{ route('reservations.check-out', $reservation->id) }}" method="POST" class="mt-2">
+                        @csrf
+                        <button type="submit" class="btn btn-outline-danger w-100">
+                            <i class="bi bi-box-arrow-right me-2"></i>Check Out & Release Seat
+                        </button>
+                    </form>
+                    
+                    <small class="text-muted">Use Temporary Leave for short breaks, or Check Out when leaving.</small>
                 @endif
 
                 @if($reservation->status === 'temporary_leave')
