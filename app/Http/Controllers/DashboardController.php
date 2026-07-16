@@ -16,19 +16,21 @@ class DashboardController extends Controller
             $query->where('is_active', true);
         }])->get();
 
-        $today = Carbon::now()->toDateString();
+        $now = Carbon::now();
+        $today = $now->toDateString();
 
         foreach ($areas as $area) {
-            // Count all checked_in and temporary_leave reservations for today
-            $occupied = Reservation::whereHas('seat', function ($query) use ($area) {
-                $query->where('area_id', $area->id);
-            })
-                ->where('reservation_date', $today)
-                ->whereIn('status', ['checked_in', 'temporary_leave'])
-                ->count();
+            // Count distinct seats currently occupied in this area.
+            $occupied = Reservation::query()
+                ->whereHas('seat', function ($query) use ($area) {
+                    $query->where('area_id', $area->id);
+                })
+                ->occupyingNow($now)
+                ->distinct('seat_id')
+                ->count('seat_id');
 
             $area->occupied_count = $occupied;
-            $area->available_count = $area->seats_count - $occupied;
+            $area->available_count = max($area->seats_count - $occupied, 0);
         }
 
         $user = Auth::user();

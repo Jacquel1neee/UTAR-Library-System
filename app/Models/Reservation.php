@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -65,5 +66,16 @@ class Reservation extends Model
             'cancelled' => 'red',
             'no_show' => 'red',
         ][$this->status] ?? 'gray';
+    }
+
+    public function scopeOccupyingNow($query, ?Carbon $now = null)
+    {
+        $now = $now ?? now();
+
+        return $query
+            ->whereDate('reservation_date', $now->toDateString())
+            ->whereTime('start_time', '<=', $now->toTimeString())
+            ->whereTime('end_time', '>=', $now->toTimeString())
+            ->whereIn('status', ['checked_in', 'temporary_leave']);
     }
 }

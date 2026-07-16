@@ -43,8 +43,6 @@ Route::middleware(['auth'])->group(function () {
     // Turnstile simulator
     Route::get('/turnstile/simulator', [TurnstileController::class, 'showSimulator'])->name('turnstile.simulator');
     Route::post('/turnstile/simulate', [TurnstileController::class, 'simulateScan'])->name('turnstile.simulate');
-    Route::get('/turnstile/simulator', [TurnstileController::class, 'showSimulator'])->name('turnstile.simulator');
-    Route::post('/turnstile/simulate', [TurnstileController::class, 'simulateScan'])->name('turnstile.simulate');
 
     // Admin routes
     Route::prefix('admin')->name('admin.')->group(function () {

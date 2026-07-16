@@ -15,18 +15,19 @@ class AreaController extends Controller
             $query->where('is_active', true);
         }])->get();
 
-        $today = Carbon::now()->toDateString();
+        $now = Carbon::now();
 
         foreach ($areas as $area) {
-            $occupied = Reservation::whereHas('seat', function ($query) use ($area) {
-                $query->where('area_id', $area->id);
-            })
-                ->where('reservation_date', $today)
-                ->whereIn('status', ['checked_in', 'temporary_leave'])
-                ->count();
+            $occupied = Reservation::query()
+                ->whereHas('seat', function ($query) use ($area) {
+                    $query->where('area_id', $area->id);
+                })
+                ->occupyingNow($now)
+                ->distinct('seat_id')
+                ->count('seat_id');
 
             $area->occupied_count = $occupied;
-            $area->available_count = $area->seats_count - $occupied;
+            $area->available_count = max($area->seats_count - $occupied, 0);
         }
 
         return view('areas.index', compact('areas'));
@@ -38,12 +39,11 @@ class AreaController extends Controller
             $query->where('is_active', true)->orderBy('row_label')->orderBy('col_position');
         }])->findOrFail($id);
 
-        $today = Carbon::now()->toDateString();
+        $now = Carbon::now();
 
         foreach ($area->seats as $seat) {
             $isOccupied = Reservation::where('seat_id', $seat->id)
-                ->where('reservation_date', $today)
-                ->whereIn('status', ['checked_in', 'temporary_leave'])
+                ->occupyingNow($now)
                 ->exists();
 
             $seat->is_occupied_now = $isOccupied;

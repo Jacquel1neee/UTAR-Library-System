@@ -51,11 +51,13 @@ class TurnstileController extends Controller
     private function handleEntry($user, $today)
     {
         $messages = [];
+        $now = Carbon::now();
 
         // 1. Check if user has any active checked_in reservation
         $checkedIn = Reservation::where('user_id', $user->id)
-            ->where('reservation_date', $today)
+            ->whereDate('reservation_date', $today)
             ->where('status', 'checked_in')
+            ->where('end_time', '>=', $now->toTimeString())
             ->exists();
 
         if ($checkedIn) {
@@ -65,66 +67,88 @@ class TurnstileController extends Controller
 
         // 2. Handle return from temporary leave
         $leaveReservations = Reservation::where('user_id', $user->id)
-            ->where('reservation_date', $today)
+            ->whereDate('reservation_date', $today)
             ->where('status', 'temporary_leave')
+            ->orderBy('start_time')
             ->get();
 
         foreach ($leaveReservations as $reservation) {
-            $leaveStarted = Carbon::parse($reservation->temporary_leave_started_at);
-            $minutesPassed = $leaveStarted->diffInMinutes(now());
+            $leaveStarted = $reservation->temporary_leave_started_at
+                ? Carbon::parse($reservation->temporary_leave_started_at)
+                : $now;
+            $minutesPassed = $leaveStarted->diffInMinutes($now);
 
             if ($minutesPassed <= 15) {
                 $reservation->update([
                     'status' => 'checked_in',
-                    'temporary_leave_ended_at' => now(),
+                    'temporary_leave_ended_at' => $now,
                 ]);
                 $messages[] = "Welcome back! Returned from temporary leave for seat {$reservation->seat->seat_number}";
             } else {
                 $reservation->update([
                     'status' => 'no_show',
-                    'temporary_leave_ended_at' => now(),
+                    'temporary_leave_ended_at' => $now,
                 ]);
                 $messages[] = "Temporary leave expired for seat {$reservation->seat->seat_number} (exceeded 15 minutes)";
             }
-            
+
             return implode(' | ', $messages);
         }
 
-        // 3. Auto check in the nearest pending/confirmed reservation
-        $now = Carbon::now();
-        
-        // Find the closest reservation (start time closest to now)
-        $reservation = Reservation::where('user_id', $user->id)
-            ->where('reservation_date', $today)
+        // 3. Auto-check in a pending/confirmed reservation.
+        // Expired reservations are marked as no_show and we continue checking next ones.
+        $reservations = Reservation::where('user_id', $user->id)
+            ->whereDate('reservation_date', $today)
             ->whereIn('status', ['pending', 'confirmed'])
             ->orderBy('start_time')
-            ->first();
+            ->get();
 
-        if (!$reservation) {
+        if ($reservations->isEmpty()) {
             $messages[] = "No pending reservations found for today.";
             return implode(' | ', $messages);
         }
 
-        $startTime = Carbon::parse($reservation->start_time);
-        $minutesDiff = $startTime->diffInMinutes($now, false);
+        $tooEarlyMessage = null;
 
-        // Check if within acceptable range (15 min before to 60 min after)
-        if ($minutesDiff >= -15 && $minutesDiff <= 60) {
+        foreach ($reservations as $reservation) {
+            $rawStartTime = (string) ($reservation->getRawOriginal('start_time') ?: $reservation->start_time);
+
+            $timePart = Carbon::parse($rawStartTime)->format('H:i:s');
+
+            $startTime = Carbon::createFromFormat('Y-m-d H:i:s', $today . ' ' . $timePart);
+            $minutesDiff = $startTime->diffInMinutes($now, false);
+
+            // Too early for this reservation, and all following ones will be even later.
+            if ($minutesDiff < -15) {
+                $tooEarlyMessage = "Too early! Your reservation starts at " . $startTime->format('h:i A') . ". Please wait.";
+                break;
+            }
+
+            if ($minutesDiff > 60) {
+                $reservation->update([
+                    'status' => 'no_show',
+                ]);
+                $messages[] = "Reservation for seat {$reservation->seat->seat_number} has expired (exceeded 60 minutes grace period)";
+                continue;
+            }
+
             $reservation->update([
                 'status' => 'checked_in',
-                'checked_in_at' => now(),
+                'checked_in_at' => $now,
             ]);
             $messages[] = "Checked in to seat {$reservation->seat->seat_number} at {$reservation->seat->area->name}";
-        } else if ($minutesDiff < -15) {
-            $messages[] = "Too early! Your reservation starts at " . Carbon::parse($reservation->start_time)->format('h:i A') . ". Please wait.";
-        } else if ($minutesDiff > 60) {
-            $reservation->update([
-                'status' => 'no_show',
-            ]);
-            $messages[] = "Reservation for seat {$reservation->seat->seat_number} has expired (exceeded 60 minutes grace period)";
+            return implode(' | ', $messages);
         }
 
-        return implode(' | ', $messages);
+        if (!empty($messages)) {
+            return implode(' | ', $messages);
+        }
+
+        if ($tooEarlyMessage) {
+            return $tooEarlyMessage;
+        }
+
+        return "No pending reservations found for today.";
     }
 
     private function handleExit($user, $today)
@@ -133,7 +157,7 @@ class TurnstileController extends Controller
 
         // Release all active reservations (checked_in or temporary_leave)
         $activeReservations = Reservation::where('user_id', $user->id)
-            ->where('reservation_date', $today)
+            ->whereDate('reservation_date', $today)
             ->whereIn('status', ['checked_in', 'temporary_leave'])
             ->get();
 
@@ -145,6 +169,7 @@ class TurnstileController extends Controller
         foreach ($activeReservations as $reservation) {
             $reservation->update([
                 'status' => 'completed',
+                'temporary_leave_ended_at' => now(),
             ]);
             $messages[] = "Released seat {$reservation->seat->seat_number}";
         }
