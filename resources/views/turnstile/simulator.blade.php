@@ -34,10 +34,11 @@
                     </div>
 
                     <div class="col-md-6">
-                        <label for="event_type" class="form-label fw-semibold small">Event Type</label>
+                        <label for="event_type" class="form-label fw-semibold small">Simulated Action</label>
                         <select class="form-select" id="event_type" name="event_type" required>
-                            <option value="entry">Entry (Scan In)</option>
-                            <option value="exit">Exit (Scan Out)</option>
+                            <option value="entry">Scan In / Auto Check In</option>
+                            <option value="exit">Scan Out / Auto Check Out</option>
+                            <option value="temporary_leave">Press Leave Button / Temporary Leave</option>
                         </select>
                     </div>
 
@@ -60,7 +61,7 @@
             <h6 class="fw-bold mb-3"><i class="bi bi-info-circle me-2 text-secondary"></i>How Auto-Detect Works</h6>
             
             <div class="mb-3 p-3 bg-light rounded-3">
-                <h6 class="fw-bold small text-primary"><i class="bi bi-box-arrow-in-right me-1"></i> Entry (Scan In)</h6>
+                <h6 class="fw-bold small text-primary"><i class="bi bi-box-arrow-in-right me-1"></i> Scan In / Auto Check In</h6>
                 <ul class="small text-muted ps-3 mb-0">
                     <li>Checks if you already have an active reservation</li>
                     <li>If on temporary leave, returns you automatically</li>
@@ -69,8 +70,17 @@
                 </ul>
             </div>
 
+            <div class="mb-3 p-3 bg-light rounded-3">
+                <h6 class="fw-bold small text-warning"><i class="bi bi-box-arrow-right me-1"></i> Press Leave Button / Temporary Leave</h6>
+                <ul class="small text-muted ps-3 mb-0">
+                    <li>Marks the current checked-in reservation as temporary leave</li>
+                    <li>Gives the student 15 minutes to return</li>
+                    <li>Does not fully release the seat yet</li>
+                </ul>
+            </div>
+
             <div class="p-3 bg-light rounded-3">
-                <h6 class="fw-bold small text-danger"><i class="bi bi-box-arrow-right me-1"></i> Exit (Scan Out)</h6>
+                <h6 class="fw-bold small text-danger"><i class="bi bi-box-arrow-right me-1"></i> Scan Out / Auto Check Out</h6>
                 <ul class="small text-muted ps-3 mb-0">
                     <li>Releases all your active reservations</li>
                     <li>Frees up seats for other students</li>

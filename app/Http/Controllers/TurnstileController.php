@@ -14,7 +14,7 @@ class TurnstileController extends Controller
     public function simulateScan(Request $request)
     {
         $request->validate([
-            'event_type' => 'required|in:entry,exit',
+            'event_type' => 'required|in:entry,exit,temporary_leave',
             'user_id' => 'required|exists:users,id',
         ]);
 
@@ -33,12 +33,16 @@ class TurnstileController extends Controller
         $today = now()->toDateString();
         $message = '';
 
-        if ($eventType === 'entry') {
-            $message = $this->handleEntry($user, $today);
-        }
-
-        if ($eventType === 'exit') {
-            $message = $this->handleExit($user, $today);
+        switch ($eventType) {
+            case 'entry':
+                $message = $this->handleEntry($user, $today);
+                break;
+            case 'exit':
+                $message = $this->handleExit($user, $today);
+                break;
+            case 'temporary_leave':
+                $message = $this->handleTemporaryLeave($user, $today);
+                break;
         }
 
         return response()->json([
@@ -51,13 +55,11 @@ class TurnstileController extends Controller
     private function handleEntry($user, $today)
     {
         $messages = [];
-        $now = Carbon::now();
 
         // 1. Check if user has any active checked_in reservation
         $checkedIn = Reservation::where('user_id', $user->id)
             ->whereDate('reservation_date', $today)
             ->where('status', 'checked_in')
-            ->where('end_time', '>=', $now->toTimeString())
             ->exists();
 
         if ($checkedIn) {
@@ -73,6 +75,7 @@ class TurnstileController extends Controller
             ->get();
 
         foreach ($leaveReservations as $reservation) {
+            $now = Carbon::now();
             $leaveStarted = $reservation->temporary_leave_started_at
                 ? Carbon::parse($reservation->temporary_leave_started_at)
                 : $now;
@@ -96,7 +99,6 @@ class TurnstileController extends Controller
         }
 
         // 3. Auto-check in a pending/confirmed reservation.
-        // Expired reservations are marked as no_show and we continue checking next ones.
         $reservations = Reservation::where('user_id', $user->id)
             ->whereDate('reservation_date', $today)
             ->whereIn('status', ['pending', 'confirmed'])
@@ -108,44 +110,14 @@ class TurnstileController extends Controller
             return implode(' | ', $messages);
         }
 
-        $tooEarlyMessage = null;
-
         foreach ($reservations as $reservation) {
-            $rawStartTime = (string) ($reservation->getRawOriginal('start_time') ?: $reservation->start_time);
-
-            $timePart = Carbon::parse($rawStartTime)->format('H:i:s');
-
-            $startTime = Carbon::createFromFormat('Y-m-d H:i:s', $today . ' ' . $timePart);
-            $minutesDiff = $startTime->diffInMinutes($now, false);
-
-            // Too early for this reservation, and all following ones will be even later.
-            if ($minutesDiff < -15) {
-                $tooEarlyMessage = "Too early! Your reservation starts at " . $startTime->format('h:i A') . ". Please wait.";
-                break;
-            }
-
-            if ($minutesDiff > 60) {
-                $reservation->update([
-                    'status' => 'no_show',
-                ]);
-                $messages[] = "Reservation for seat {$reservation->seat->seat_number} has expired (exceeded 60 minutes grace period)";
-                continue;
-            }
-
+            $now = Carbon::now();
             $reservation->update([
                 'status' => 'checked_in',
                 'checked_in_at' => $now,
             ]);
             $messages[] = "Checked in to seat {$reservation->seat->seat_number} at {$reservation->seat->area->name}";
             return implode(' | ', $messages);
-        }
-
-        if (!empty($messages)) {
-            return implode(' | ', $messages);
-        }
-
-        if ($tooEarlyMessage) {
-            return $tooEarlyMessage;
         }
 
         return "No pending reservations found for today.";
@@ -175,6 +147,28 @@ class TurnstileController extends Controller
         }
 
         return implode(' | ', $messages);
+    }
+
+    private function handleTemporaryLeave($user, $today)
+    {
+        $reservation = Reservation::where('user_id', $user->id)
+            ->whereDate('reservation_date', $today)
+            ->where('status', 'checked_in')
+            ->orderBy('start_time')
+            ->first();
+
+        if (!$reservation) {
+            return "No checked-in reservation found for temporary leave.";
+        }
+
+        $now = now();
+
+        $reservation->update([
+            'status' => 'temporary_leave',
+            'temporary_leave_started_at' => $now,
+        ]);
+
+        return "Temporary leave started for seat {$reservation->seat->seat_number}. Return within 15 minutes.";
     }
 
     public function showSimulator()

@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('turnstile_events', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->enum('event_type', ['entry', 'exit']);
+            $table->enum('event_type', ['entry', 'exit', 'temporary_leave']);
             $table->timestamp('event_time');
             $table->boolean('is_simulated')->default(false);
             $table->json('metadata')->nullable();

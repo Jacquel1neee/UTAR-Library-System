@@ -39,7 +39,6 @@ class Area extends Model
         return $this->seats()
             ->whereHas('reservations', function ($query) use ($now) {
                 $query->where('reservation_date', $now->toDateString())
-                    ->where('start_time', '<=', $now->toTimeString())
                     ->where('end_time', '>=', $now->toTimeString())
                     ->whereIn('status', ['checked_in', 'temporary_leave']);
             })

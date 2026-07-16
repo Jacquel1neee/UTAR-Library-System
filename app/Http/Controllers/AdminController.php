@@ -20,7 +20,11 @@ class AdminController extends Controller
 
         $totalUsers = User::where('role', 'student')->count();
         $totalReservations = Reservation::count();
-        $activeReservations = Reservation::whereIn('status', ['checked_in', 'temporary_leave'])->count();
+        $now = Carbon::now();
+        $activeReservations = Reservation::query()
+            ->occupyingNow($now)
+            ->distinct('seat_id')
+            ->count('seat_id');
 
         $today = Carbon::now()->toDateString();
         $todayReservations = Reservation::where('reservation_date', $today)->count();
@@ -29,21 +33,17 @@ class AdminController extends Controller
             $query->where('is_active', true);
         }])->get();
 
-        $now = Carbon::now();
-        $currentTime = $now->toTimeString();
-
         foreach ($areas as $area) {
-            $occupied = Reservation::whereHas('seat', function ($query) use ($area) {
+            $occupied = Reservation::query()
+                ->whereHas('seat', function ($query) use ($area) {
                 $query->where('area_id', $area->id);
             })
-                ->where('reservation_date', $today)
-                ->where('start_time', '<=', $currentTime)
-                ->where('end_time', '>=', $currentTime)
-                ->whereIn('status', ['checked_in', 'temporary_leave'])
-                ->count();
+                ->occupyingNow($now)
+                ->distinct('seat_id')
+                ->count('seat_id');
 
             $area->occupied_count = $occupied;
-            $area->available_count = $area->seats_count - $occupied;
+            $area->available_count = max($area->seats_count - $occupied, 0);
         }
 
         $recentReservations = Reservation::with(['user', 'seat', 'seat.area'])
