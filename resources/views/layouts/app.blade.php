@@ -300,8 +300,8 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">
-                            <i class="bi bi-grid-3x3-gap-fill me-1"></i> Dashboard
+                        <a class="nav-link {{ request()->routeIs('home') ? 'active' : '' }}" href="{{ route('home') }}">
+                            <i class="bi bi-grid-3x3-gap-fill me-1"></i> Home Page
                         </a>
                     </li>
                     <li class="nav-item">

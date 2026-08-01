@@ -116,7 +116,7 @@ $(document).ready(function() {
                 
                 // Refresh page after 2 seconds
                 setTimeout(function() {
-                    location.reload();
+                location.reload();
                 }, 2000);
             },
             error: function(xhr) {
