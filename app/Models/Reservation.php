@@ -74,7 +74,14 @@ class Reservation extends Model
 
         return $query
             ->whereDate('reservation_date', $now->toDateString())
-            ->whereTime('end_time', '>=', $now->toTimeString())
-            ->whereIn('status', ['checked_in', 'temporary_leave']);
+            ->where('end_time', '>=', $now->toTimeString())
+            ->where(function ($query) use ($now) {
+                $query->where(function ($subQuery) use ($now) {
+                    $subQuery->where('status', 'checked_in');
+                })->orWhere(function ($subQuery) use ($now) {
+                    $subQuery->where('status', 'temporary_leave')
+                        ->where('start_time', '<=', $now->toTimeString());
+                });
+            });
     }
 }

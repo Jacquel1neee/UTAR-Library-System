@@ -116,8 +116,11 @@
 <div class="row g-3">
     <div class="col-12">
         <div class="card-custom p-0 overflow-hidden">
-            <div class="p-3 border-bottom bg-light">
+            <div class="p-3 border-bottom bg-light d-flex align-items-center justify-content-between">
                 <h6 class="fw-bold mb-0"><i class="bi bi-clock-history me-2"></i>Recent Reservations</h6>
+                <a href="{{ route('admin.reservations') }}" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-list-ul me-1"></i>All Reservations
+                </a>
             </div>
             <div class="table-responsive">
                 <table class="table table-hover mb-0">

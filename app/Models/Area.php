@@ -40,7 +40,14 @@ class Area extends Model
             ->whereHas('reservations', function ($query) use ($now) {
                 $query->where('reservation_date', $now->toDateString())
                     ->where('end_time', '>=', $now->toTimeString())
-                    ->whereIn('status', ['checked_in', 'temporary_leave']);
+                    ->where(function ($query) use ($now) {
+                        $query->where(function ($subQuery) use ($now) {
+                            $subQuery->where('status', 'checked_in');
+                        })->orWhere(function ($subQuery) use ($now) {
+                            $subQuery->where('status', 'temporary_leave')
+                                ->where('start_time', '<=', $now->toTimeString());
+                        });
+                    });
             })
             ->count();
     }

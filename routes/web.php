@@ -47,5 +47,6 @@ Route::middleware(['auth'])->group(function () {
     // Admin routes
     Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+        Route::get('/reservations', [AdminController::class, 'allReservations'])->name('reservations');
     });
 });

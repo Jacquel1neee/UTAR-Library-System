@@ -60,4 +60,19 @@ class AdminController extends Controller
             'recentReservations'
         ));
     }
+
+    public function allReservations()
+    {
+        $user = Auth::user();
+        if (!$user || $user->role !== 'admin') {
+            abort(403, 'Unauthorized access. Admin only.');
+        }
+
+        $reservations = Reservation::with(['user', 'seat', 'seat.area'])
+            ->orderBy('reservation_date', 'desc')
+            ->orderBy('start_time', 'desc')
+            ->paginate(20);
+
+        return view('admin.reservations', compact('reservations'));
+    }
 }
