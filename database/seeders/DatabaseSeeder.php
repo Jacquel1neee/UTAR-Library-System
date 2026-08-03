@@ -12,6 +12,7 @@ class DatabaseSeeder extends Seeder
             AreaSeeder::class,
             SeatSeeder::class,
             UserSeeder::class,
+            ReservationSeeder::class,
         ]);
     }
 }

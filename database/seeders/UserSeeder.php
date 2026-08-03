@@ -28,6 +28,13 @@ class UserSeeder extends Seeder
             ['name' => 'Mike Johnson', 'email' => 'mike@utar.edu.my', 'student_id' => '2204289'],
             ['name' => 'Sarah Lee', 'email' => 'sarah@utar.edu.my', 'student_id' => '2204290'],
             ['name' => 'David Tan', 'email' => 'david@utar.edu.my', 'student_id' => '2204291'],
+            ['name' => 'Amy Wong', 'email' => 'amy@utar.edu.my', 'student_id' => '2204292'],
+            ['name' => 'Chris Lim', 'email' => 'chris@utar.edu.my', 'student_id' => '2204293'],
+            ['name' => 'Nurul Ismail', 'email' => 'nurul@utar.edu.my', 'student_id' => '2204294'],
+            ['name' => 'Ethan Khoo', 'email' => 'ethan@utar.edu.my', 'student_id' => '2204295'],
+            ['name' => 'Priya Raman', 'email' => 'priya@utar.edu.my', 'student_id' => '2204296'],
+            ['name' => 'Kumar Raj', 'email' => 'kumar@utar.edu.my', 'student_id' => '2204297'],
+            ['name' => 'Lina Chen', 'email' => 'lina@utar.edu.my', 'student_id' => '2204298'],
         ];
 
         foreach ($students as $student) {
