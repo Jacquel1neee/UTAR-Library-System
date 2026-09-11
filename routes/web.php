@@ -5,6 +5,7 @@ use App\Http\Controllers\AreaController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FeedbackController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\SeatController;
 use App\Http\Controllers\TurnstileController;
@@ -22,6 +23,8 @@ Route::middleware(['auth'])->group(function () {
     // Dashboard
     Route::get('/', [DashboardController::class, 'index'])->name('home');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
 
     // Areas
     Route::get('/areas', [AreaController::class, 'index'])->name('areas.index');
