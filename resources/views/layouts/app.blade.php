@@ -314,6 +314,11 @@
                             <i class="bi bi-calendar-check me-1"></i> My Reservations
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('feedback.*') ? 'active' : '' }}" href="{{ route('feedback.create') }}">
+                            <i class="bi bi-chat-heart me-1"></i> Feedback
+                        </a>
+                    </li>
                     @auth
                         @if(auth()->user()->isAdmin())
                             <li class="nav-item">

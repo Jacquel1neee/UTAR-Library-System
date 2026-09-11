@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AreaController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\SeatController;
 use App\Http\Controllers\TurnstileController;
@@ -39,6 +40,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/reservations/{id}/temporary-leave', [ReservationController::class, 'temporaryLeave'])->name('reservations.temporary-leave');
     Route::post('/reservations/{id}/return', [ReservationController::class, 'returnFromLeave'])->name('reservations.return');
     Route::post('/reservations/{id}/check-out', [ReservationController::class, 'checkOut'])->name('reservations.check-out');
+    Route::post('/reservations/{id}/feedback', [FeedbackController::class, 'store'])->name('reservations.feedback');
+    Route::get('/feedback', [FeedbackController::class, 'create'])->name('feedback.create');
+    Route::post('/feedback', [FeedbackController::class, 'storeGeneral'])->name('feedback.store');
 
     // Turnstile simulator
     Route::get('/turnstile/simulator', [TurnstileController::class, 'showSimulator'])->name('turnstile.simulator');
@@ -48,5 +52,8 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
         Route::get('/reservations', [AdminController::class, 'allReservations'])->name('reservations');
+        Route::get('/occupancy', [AdminController::class, 'occupancy'])->name('occupancy');
+        Route::get('/occupancy/export', [AdminController::class, 'exportOccupancy'])->name('occupancy.export');
+        Route::get('/feedback', [AdminController::class, 'feedback'])->name('feedback');
     });
 });

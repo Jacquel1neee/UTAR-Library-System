@@ -42,6 +42,11 @@ class Reservation extends Model
         return $this->belongsTo(Seat::class);
     }
 
+    public function feedback()
+    {
+        return $this->hasOne(Feedback::class);
+    }
+
     public function getStatusLabelAttribute()
     {
         return [

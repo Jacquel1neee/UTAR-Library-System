@@ -137,5 +137,32 @@
             </div>
         @endif
     </div>
+
+    @if($reservation->status === 'completed' && !$reservation->feedback)
+        <div class="card-custom p-4 mt-3">
+            <h6 class="fw-bold mb-1"><i class="bi bi-chat-heart me-2 text-primary"></i>How was your study session?</h6>
+            <p class="small text-muted">Share feedback to help us improve the library experience.</p>
+            <form action="{{ route('reservations.feedback', $reservation->id) }}" method="POST">
+                @csrf
+                <label for="rating" class="form-label small fw-semibold">Rating</label>
+                <select id="rating" name="rating" class="form-select mb-3" required>
+                    <option value="">Choose a rating</option>
+                    <option value="5">5 - Excellent</option>
+                    <option value="4">4 - Good</option>
+                    <option value="3">3 - Average</option>
+                    <option value="2">2 - Poor</option>
+                    <option value="1">1 - Very poor</option>
+                </select>
+                <label for="comment" class="form-label small fw-semibold">Comment <span class="text-muted fw-normal">(optional)</span></label>
+                <textarea id="comment" name="comment" class="form-control mb-3" rows="3" maxlength="1000" placeholder="Tell us about your experience"></textarea>
+                <button type="submit" class="btn btn-primary-custom w-100"><i class="bi bi-send me-2"></i>Submit Feedback</button>
+            </form>
+        </div>
+    @elseif($reservation->feedback)
+        <div class="card-custom p-4 mt-3 border border-success">
+            <h6 class="fw-bold mb-1"><i class="bi bi-check-circle me-2 text-success"></i>Feedback submitted</h6>
+            <p class="text-warning mb-0">{{ str_repeat('★', $reservation->feedback->rating) }}<span class="text-muted">{{ str_repeat('★', 5 - $reservation->feedback->rating) }}</span></p>
+        </div>
+    @endif
 </div>
 @endsection

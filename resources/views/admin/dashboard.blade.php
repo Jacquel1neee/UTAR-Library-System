@@ -17,6 +17,11 @@
     </div>
 </div>
 
+<div class="d-flex gap-2 mb-4">
+    <a href="{{ route('admin.occupancy') }}" class="btn btn-primary-custom"><i class="bi bi-bar-chart-line me-1"></i>Occupancy Reports</a>
+    <a href="{{ route('admin.feedback') }}" class="btn btn-outline-primary-custom"><i class="bi bi-chat-heart me-1"></i>User Feedback</a>
+</div>
+
 <!-- Stats -->
 <div class="row g-3 mb-4">
     <div class="col-6 col-md-3">

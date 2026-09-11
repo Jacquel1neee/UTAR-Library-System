@@ -19,42 +19,52 @@ class ReservationSeeder extends Seeder
             return;
         }
 
-        $today = Carbon::today();
         $now = Carbon::now();
         $studentIds = array_values($students);
         $seatIds = $seats->pluck('id')->all();
         $records = [];
 
-        for ($i = 0; $i < 40; $i++) {
-            $seat = $seats[$i % $seats->count()];
-            $seatId = $seat->id;
-            $studentId = $studentIds[$i % count($studentIds)];
-            $baseHour = 8 + ($i % 8);
-            $startTime = sprintf('%02d:00:00', $baseHour);
-            $endTime = sprintf('%02d:00:00', $baseHour + 2);
+        // Current-day examples for the area dashboard and seat map:
+        // the first area is full, the second area is partially occupied, and
+        // the remaining seats are intentionally available.
+        $activeStart = $now->copy()->subHour();
+        $activeEnd = $now->copy()->addHours(2);
+        $firstAreaId = $seats->first()->area_id;
+        $fullAreaSeats = $seats->where('area_id', $firstAreaId)->values();
+        $partiallyOccupiedSeats = $seats->where('area_id', '!=', $firstAreaId)->values();
 
-            $status = $i < 8 ? 'checked_in' : ($i < 16 ? 'temporary_leave' : 'confirmed');
-            $reservation = [
-                'user_id' => $studentId,
-                'seat_id' => $seatId,
-                'reservation_date' => $today->toDateString(),
-                'start_time' => $startTime,
-                'end_time' => $endTime,
-                'duration_hours' => 2,
+        foreach ($fullAreaSeats as $index => $seat) {
+            $status = $index === 0 ? 'temporary_leave' : 'checked_in';
+            $records[] = [
+                'user_id' => $studentIds[$index % count($studentIds)],
+                'seat_id' => $seat->id,
+                'reservation_date' => $now->toDateString(),
+                'start_time' => $activeStart->format('H:i:s'),
+                'end_time' => $activeEnd->format('H:i:s'),
+                'duration_hours' => 3,
                 'status' => $status,
+                'checked_in_at' => $now->copy()->subHours(2)->toDateTimeString(),
+                'temporary_leave_started_at' => $status === 'temporary_leave'
+                    ? $now->copy()->subMinutes(5)->toDateTimeString()
+                    : null,
             ];
-
-            if ($status === 'checked_in') {
-                $reservation['checked_in_at'] = $now->copy()->subHours(1)->toDateTimeString();
-            }
-
-            if ($status === 'temporary_leave') {
-                $reservation['checked_in_at'] = $now->copy()->subHours(2)->toDateTimeString();
-                $reservation['temporary_leave_started_at'] = $now->copy()->subMinutes(30)->toDateTimeString();
-            }
-
-            $records[] = $reservation;
         }
+
+        // Occupy only the first eight seats in another area so it has free places.
+        foreach ($partiallyOccupiedSeats->take(8) as $index => $seat) {
+            $records[] = [
+                'user_id' => $studentIds[($index + 1) % count($studentIds)],
+                'seat_id' => $seat->id,
+                'reservation_date' => $now->toDateString(),
+                'start_time' => $activeStart->format('H:i:s'),
+                'end_time' => $activeEnd->format('H:i:s'),
+                'duration_hours' => 3,
+                'status' => 'checked_in',
+                'checked_in_at' => $now->copy()->subMinutes(30)->toDateTimeString(),
+            ];
+        }
+
+        $today = $now->copy()->startOfDay();
 
         for ($i = 0; $i < 30; $i++) {
             $seatId = $seatIds[(40 + $i) % count($seatIds)];
